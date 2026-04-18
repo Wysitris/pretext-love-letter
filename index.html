@@ -602,6 +602,75 @@
       state.needsResize = true;
     }
 
+    function applyCanvasSize(width, height) {
+      const dpr = window.devicePixelRatio || 1;
+
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${height}px`;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, width, height);
+      ctx.font = metrics.font;
+      ctx.fillStyle = '#5d332f';
+      ctx.textBaseline = 'alphabetic';
+
+      state.width = width;
+      state.height = height;
+    }
+
+    function measureRequiredCanvasHeight(reserveLineCount) {
+      const obstacles = getFlowerObstacles();
+      let cursor = { segmentIndex: 0, graphemeIndex: 0 };
+      let y = metrics.verticalPadding;
+
+      while (true) {
+        const lineTop = y - metrics.lineHeight + 6;
+        const lineBottom = y + 8;
+        const segments = getAvailableSegments(lineTop, lineBottom, obstacles);
+
+        if (segments.length === 0) {
+          y += metrics.lineHeight;
+          continue;
+        }
+
+        let advancedOnThisLine = false;
+
+        for (const segment of segments) {
+          const segWidth = segment.end - segment.start;
+          if (segWidth < 40) {
+            continue;
+          }
+
+          const range = layoutNextLineRange(state.prepared, cursor, segWidth);
+          if (range === null) {
+            break;
+          }
+
+          cursor = range.end;
+          advancedOnThisLine = true;
+        }
+
+        if (!advancedOnThisLine) {
+          const fallback = { start: metrics.horizontalPadding, end: state.width - metrics.horizontalPadding };
+          const range = layoutNextLineRange(state.prepared, cursor, Math.max(40, fallback.end - fallback.start));
+          if (range === null) {
+            break;
+          }
+          cursor = range.end;
+        }
+
+        const peekRange = layoutNextLineRange(state.prepared, cursor, 40);
+        if (peekRange === null) {
+          break;
+        }
+
+        y += metrics.lineHeight;
+      }
+
+      return y + metrics.lineHeight + metrics.verticalPadding + reserveLineCount * metrics.lineHeight;
+    }
+
     function resizeCanvas() {
       syncMetrics();
       const width = Math.max(280, Math.floor(letterBody.clientWidth - 16));
@@ -617,26 +686,31 @@
       const lineStats = measureLineStats(state.prepared, effectiveWidth);
       const reserveLineCount = isMobile ? 2 : 4;
       const minCanvasHeight = isMobile ? 220 : 420;
-      const estimatedHeight = Math.max(
+      let estimatedHeight = Math.max(
         minCanvasHeight,
         lineStats.lineCount * metrics.lineHeight
           + metrics.verticalPadding * 2
           + metrics.lineHeight * reserveLineCount
       );
-      const dpr = window.devicePixelRatio || 1;
 
-      canvas.style.width = `${width}px`;
-      canvas.style.height = `${estimatedHeight}px`;
-      canvas.width = Math.round(width * dpr);
-      canvas.height = Math.round(estimatedHeight * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      ctx.clearRect(0, 0, width, estimatedHeight);
-      ctx.font = metrics.font;
-      ctx.fillStyle = '#5d332f';
-      ctx.textBaseline = 'alphabetic';
+      for (let attempt = 0; attempt < 3; attempt += 1) {
+        applyCanvasSize(width, estimatedHeight);
+        layoutFlowers();
 
-      state.width = width;
-      state.height = estimatedHeight;
+        const requiredHeight = Math.max(
+          minCanvasHeight,
+          Math.ceil(measureRequiredCanvasHeight(isMobile ? 1 : 2))
+        );
+
+        if (requiredHeight <= estimatedHeight + Math.ceil(metrics.lineHeight / 2)) {
+          estimatedHeight = requiredHeight;
+          break;
+        }
+
+        estimatedHeight = requiredHeight;
+      }
+
+      applyCanvasSize(width, estimatedHeight);
       layoutFlowers();
       state.needsResize = false;
     }
