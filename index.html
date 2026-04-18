@@ -1,0 +1,954 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Love Letter</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500;1,600&family=Long+Cang&family=Ma+Shan+Zheng&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --page-bg-1: #fff4ea;
+      --page-bg-2: #f9d8d0;
+      --page-bg-3: #f3e8d2;
+      --paper: rgba(252, 247, 238, 0.9);
+      --paper-edge: rgba(164, 117, 98, 0.15);
+      --text-main: #5d332f;
+      --text-soft: rgba(93, 51, 47, 0.68);
+      --accent: #a5555c;
+      --accent-strong: #7f2f37;
+      --button-bg: rgba(255, 250, 246, 0.92);
+      --button-border: rgba(127, 47, 55, 0.14);
+      --shadow: 0 30px 80px rgba(105, 59, 43, 0.18);
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      min-height: 100dvh;
+      font-family: "Cormorant Garamond", serif;
+      color: var(--text-main);
+      background:
+        radial-gradient(circle at top left, rgba(255, 255, 255, 0.78), transparent 34%),
+        radial-gradient(circle at 85% 15%, rgba(255, 215, 208, 0.85), transparent 28%),
+        linear-gradient(145deg, var(--page-bg-1), var(--page-bg-2) 48%, var(--page-bg-3));
+      overflow-x: hidden;
+    }
+
+    body::before,
+    body::after {
+      content: "";
+      position: fixed;
+      inset: auto;
+      width: 42vmax;
+      height: 42vmax;
+      border-radius: 50%;
+      pointer-events: none;
+      z-index: 0;
+      filter: blur(18px);
+      opacity: 0.46;
+    }
+
+    body::before {
+      left: -14vmax;
+      top: -12vmax;
+      background: radial-gradient(circle, rgba(255, 228, 222, 0.92), transparent 62%);
+    }
+
+    body::after {
+      right: -10vmax;
+      bottom: -18vmax;
+      background: radial-gradient(circle, rgba(255, 241, 205, 0.82), transparent 62%);
+    }
+
+    .stage {
+      position: relative;
+        z-index: 3;
+      min-height: 100dvh;
+      display: grid;
+      place-items: center;
+      padding: clamp(12px, 3vw, 32px);
+    }
+
+    .letter-shell {
+        width: min(956px, 100%);
+      /* width: min(760px, 100%); */
+      animation: letter-rise 1.2s cubic-bezier(0.2, 0.8, 0.18, 1) both;
+        z-index: 2;
+
+    .letter-paper {
+      position: relative;
+      padding: 26px;
+      border-radius: 30px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.45), rgba(255, 255, 255, 0)),
+        var(--paper);
+      border: 1px solid var(--paper-edge);
+      box-shadow: var(--shadow);
+      backdrop-filter: blur(14px);
+      overflow: hidden;
+      isolation: isolate;
+    }
+
+    .letter-paper::before {
+      content: "";
+      position: absolute;
+      inset: 10px;
+      border-radius: 24px;
+      pointer-events: none;
+      z-index: 0;
+    }
+
+    .letter-paper::after {
+      content: "";
+      position: absolute;
+      top: 0;
+      right: 0;
+      width: min(44%, 320px);
+      aspect-ratio: 725 / 536;
+      background: url("./images/bg.png") top right / contain no-repeat;
+      opacity: 0.92;
+      pointer-events: none;
+      z-index: 1;
+      transform: translate(8%, -6%);
+    }
+
+    .letter-toolbar {
+      position: relative;
+      z-index: 3;
+      display: flex;
+      justify-content: flex-end;
+      margin-bottom: 8px;
+    }
+
+    .language-toggle {
+      display: inline-flex;
+      gap: 6px;
+      padding: 6px;
+      border-radius: 999px;
+      background: var(--button-bg);
+      border: 1px solid var(--button-border);
+      box-shadow: 0 12px 30px rgba(124, 62, 49, 0.08);
+    }
+
+    .language-toggle button {
+      border: 0;
+      background: transparent;
+      color: var(--text-soft);
+      padding: 8px 14px;
+      border-radius: 999px;
+      font: 600 14px/1 "Cormorant Garamond", serif;
+      letter-spacing: 0.06em;
+      cursor: pointer;
+      transition: background-color 0.22s ease, color 0.22s ease, transform 0.22s ease;
+    }
+
+    .language-toggle button.active {
+      background: linear-gradient(135deg, rgba(165, 85, 92, 0.16), rgba(127, 47, 55, 0.24));
+      color: var(--accent-strong);
+      transform: translateY(-1px);
+    }
+
+    .letter-head {
+      position: relative;
+      z-index: 2;
+      padding: 10px clamp(96px, 20vw, 150px) 20px 8px;
+    }
+
+    .letter-kicker {
+      margin: 0;
+      color: var(--accent);
+      font-size: 15px;
+      letter-spacing: 0.24em;
+      text-transform: uppercase;
+    }
+
+    .letter-title {
+      margin: 10px 0 10px;
+      font: 400 clamp(38px, 6vw, 64px)/0.95 "Ma Shan Zheng", cursive;
+      color: #7f3d45;
+    }
+
+    .letter-subtitle {
+      margin: 0;
+      max-width: 440px;
+      font-size: 22px;
+      line-height: 1.28;
+      color: var(--text-soft);
+    }
+
+    :lang(zh-CN) .letter-subtitle {
+      font-family: "Long Cang", cursive;
+      font-size: 24px;
+      line-height: 1.5;
+    }
+
+    :lang(en) .letter-subtitle {
+      font-family: "Cormorant Garamond", serif;
+      font-style: italic;
+    }
+
+    .letter-body {
+      position: relative;
+      z-index: 1;
+      padding: 12px 8px 8px;
+      min-height: 420px;
+    }
+
+    .letter-signature {
+      position: relative;
+      z-index: 2;
+      margin: 4px 8px 2px;
+      text-align: right;
+      line-height: 1.35;
+      color: rgba(93, 51, 47, 0.9);
+    }
+
+    .letter-signature .date-line {
+      display: block;
+      font-size: 18px;
+      letter-spacing: 0.02em;
+    }
+
+    .letter-signature .name-line {
+      display: block;
+      margin-top: 2px;
+      font-size: 22px;
+      letter-spacing: 0.04em;
+    }
+
+    :lang(zh-CN) .letter-signature {
+      font-family: "Long Cang", cursive;
+    }
+
+    :lang(en) .letter-signature {
+      font-family: "Cormorant Garamond", serif;
+      font-style: italic;
+    }
+
+    .letter-body::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      border-radius: 22px;
+      background:
+        linear-gradient(180deg, rgba(255, 255, 255, 0.22), rgba(255, 255, 255, 0)),
+        repeating-linear-gradient(
+          180deg,
+          rgba(157, 115, 100, 0.05) 0,
+          rgba(157, 115, 100, 0.05) 1px,
+          transparent 1px,
+          transparent 31px
+        );
+      z-index: 0;
+    }
+
+    #letter-canvas {
+      position: relative;
+      z-index: 2;
+      display: block;
+      width: 100%;
+      height: auto;
+    }
+
+    .flower {
+      position: absolute;
+      z-index: 3;
+      width: 256px;
+      aspect-ratio: 1;
+      pointer-events: auto;
+      user-select: none;
+      touch-action: none;
+      opacity: 0.94;
+      filter: drop-shadow(0 14px 18px rgba(143, 80, 76, 0.18));
+      cursor: grab;
+      will-change: left, top, transform;
+    }
+
+    .flower--one {
+      top: 0;
+      left: 0;
+    }
+
+    .flower--two {
+      top: 0;
+      left: 0;
+      width: 276px;
+    }
+
+    .flower.is-dragging {
+      cursor: grabbing;
+      filter: drop-shadow(0 18px 30px rgba(143, 80, 76, 0.28));
+    }
+
+    .flower img {
+      width: 100%;
+      height: 100%;
+      display: block;
+      object-fit: contain;
+      pointer-events: none;
+    }
+
+    .status-note {
+      padding: 14px 8px 0;
+      font-size: 16px;
+      color: var(--text-soft);
+      position: relative;
+      z-index: 2;
+    }
+
+    @keyframes letter-rise {
+      from {
+        opacity: 0;
+        transform: translateY(120px) scale(0.98);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @keyframes drift-a {
+      from {
+        transform: translate3d(0, 0, 0) rotate(-4deg);
+      }
+      to {
+        transform: translate3d(18px, -24px, 0) rotate(7deg);
+      }
+    }
+
+    @keyframes drift-b {
+      from {
+        transform: translate3d(0, 0, 0) rotate(3deg);
+      }
+      to {
+        transform: translate3d(-22px, 18px, 0) rotate(-6deg);
+      }
+    }
+
+    @media (max-width: 720px) {
+      .letter-paper {
+        padding: 18px;
+        border-radius: 24px;
+      }
+
+      .letter-toolbar {
+        position: absolute;
+        top: 10px;
+        right: 10px;
+        margin-bottom: 0;
+      }
+
+      .letter-head {
+        padding: 42px 84px 18px 2px;
+      }
+
+      .letter-title {
+        font-size: clamp(34px, 11vw, 52px);
+      }
+
+      .letter-subtitle {
+        font-size: 20px;
+        max-width: 100%;
+      }
+
+      .flower {
+        width: 192px;
+      }
+
+      .letter-paper::after {
+        width: min(46%, 210px);
+        transform: translate(10%, -4%);
+      }
+    }
+
+    @media (max-width: 520px) {
+      .letter-paper {
+        padding: 14px;
+        border-radius: 20px;
+      }
+
+      .language-toggle {
+        gap: 4px;
+        padding: 4px;
+      }
+
+      .language-toggle button {
+        padding: 7px 10px;
+        font-size: 13px;
+      }
+
+      .letter-head {
+        padding: 40px 74px 14px 0;
+      }
+
+      .letter-kicker {
+        font-size: 12px;
+        letter-spacing: 0.16em;
+      }
+
+      .letter-subtitle {
+        font-size: 18px;
+        line-height: 1.34;
+      }
+
+      .letter-body {
+        padding: 8px 4px 4px;
+        min-height: 0;
+      }
+
+      .letter-signature {
+        margin: 4px 0 0;
+      }
+
+      .letter-signature .date-line {
+        font-size: 16px;
+      }
+
+      .letter-signature .name-line {
+        font-size: 20px;
+      }
+
+      .status-note {
+        padding: 12px 0 0;
+        font-size: 14px;
+      }
+
+      .letter-paper::after {
+        width: min(50%, 168px);
+        opacity: 0.78;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="stage">
+    <section class="letter-shell">
+      <article class="letter-paper">
+        <div class="letter-toolbar">
+          <div class="language-toggle" aria-label="language switch">
+            <button type="button" class="active" data-language="zh">中文</button>
+            <button type="button" data-language="en">EN</button>
+          </div>
+        </div>
+
+        <header class="letter-head">
+          <p class="letter-kicker" id="letter-kicker"></p>
+          <h1 class="letter-title" id="letter-title"></h1>
+          <p class="letter-subtitle" id="letter-subtitle"></p>
+        </header>
+
+        <section class="letter-body" id="letter-body">
+          <div class="flower flower--one" aria-hidden="true" data-flower-index="0">
+            <img src="./images/flower1.png" alt="">
+          </div>
+
+          <div class="flower flower--two" aria-hidden="true" data-flower-index="1">
+            <img src="./images/flower2.png" alt="">
+          </div>
+
+          <canvas id="letter-canvas"></canvas>
+        </section>
+
+        <p class="letter-signature" aria-label="signature">
+          <span class="date-line">2026年04月18日</span>
+          <span class="name-line">Stupidsheep</span>
+        </p>
+      </article>
+    </section>
+  </main>
+
+  <script type="module">
+    import {
+      layoutNextLineRange,
+      materializeLineRange,
+      measureLineStats,
+      prepareWithSegments,
+    } from 'https://esm.sh/@chenglou/pretext@0.0.5';
+
+    const LETTERS = {
+      zh: {
+        kicker: 'A LETTER FOR YOU',
+        title: '写给你',
+        subtitle: '我想让你看见，距离之外，我也在认真地爱着你。',
+        paragraphs: [
+          '今天是我们在一起的第八天，也是分开后的第六天，我很想告诉你，我真的很想珍惜这段感情，哪怕是异地，我也不想错过你。',
+          '上周末在长沙的两天，是我今年以来最开心、最幸福的时光。从捧着花在你小区外等你，到一起逛美术馆、走洋湖湿地，听合唱团唱歌，在天心阁拍樱花合照，每一刻都让我觉得安心又舒服。',
+          '我喜欢你的独立、真诚、温柔与优秀。',
+          '五百公里的距离只是暂时的，我会一直陪着你，认真且坚定，我们一起慢慢走，一起变好。',
+        ],
+      },
+      en: {
+        kicker: 'A LETTER FOR YOU',
+        title: 'For You',
+        subtitle: 'I want you to feel how sincere and steady my feelings are, even from far away.',
+        note: 'Use the switch in the corner to go back to Chinese. The two flowers are placeholders and can be replaced later.',
+        paragraphs: [
+          'Today is our eighth day together, and the sixth day since we have been apart. I really want to tell you that I want to cherish this relationship with all my heart. Even if we are long-distance, I do not want to miss you.',
+          'Those two days in Changsha last weekend were the happiest and warmest moments I have had this year. From waiting outside your neighborhood with flowers, to visiting the art museum, walking through Yanghu Wetland, listening to the choir sing, and taking cherry blossom photos together at Tianxin Pavilion, every moment made me feel peaceful and close to you.',
+          'I love your independence, your sincerity, your gentleness, and your excellence.',
+          'The five hundred kilometers between us are only temporary. I will stay by your side with patience and determination, and we will keep moving forward together and become better together.',
+        ],
+      },
+    };
+
+    const canvas = document.getElementById('letter-canvas');
+    const ctx = canvas.getContext('2d');
+    const letterBody = document.getElementById('letter-body');
+    const kicker = document.getElementById('letter-kicker');
+    const title = document.getElementById('letter-title');
+    const subtitle = document.getElementById('letter-subtitle');
+    const languageButtons = [...document.querySelectorAll('[data-language]')];
+    const flowers = [...document.querySelectorAll('.flower')];
+
+    const state = {
+      language: 'zh',
+      prepared: null,
+      text: '',
+      rafId: 0,
+      width: 0,
+      height: 0,
+      needsResize: true,
+      bodyWidth: 0,
+      bodyHeight: 0,
+      flowerStates: [],
+      draggingFlowerIndex: null,
+    };
+
+    const FLOWER_LAYOUTS_DESKTOP = [
+      { x: 0.045, y: 0.421, size: 0.298, driftX: 9, driftY: 7, phase: 0.2, rotation: -5 },
+      { x: 1, y: 1.531, size: 0.298, driftX: -10, driftY: 8, phase: 2.2, rotation: 7 },
+    ];
+
+    const FLOWER_LAYOUTS_MOBILE = [
+            {
+                "x": 0,
+                "y": 0.487,
+                "size": 0.423,
+                driftX: -7, driftY: 6, phase: 2.2, rotation: 6
+            },
+            {
+                "x": 1,
+                "y": 1.933,
+                "size": 0.423, driftX: -7, driftY: 6, phase: 2.2, rotation: 6 
+            }
+    ];1
+
+    const FLOWER_DEBUG_INTERVAL_MS = 3000;
+    let flowerDebugTimerId = null;
+
+    const metrics = {
+      font: '500 28px "Cormorant Garamond"',
+      lineHeight: 31,
+      verticalPadding: 26,
+      horizontalPadding: 18,
+      obstaclePadding: 18,
+      minWidth: 160,
+    };
+
+    function getLetterText(language) {
+      return LETTERS[language].paragraphs.join('\n\n');
+    }
+
+    function clamp(value, min, max) {
+      return Math.min(Math.max(value, min), max);
+    }
+
+    function getFontForLanguage(fontSize, language) {
+      if (language === 'zh') {
+        return `400 ${fontSize}px "Long Cang", cursive`;
+      }
+      return `italic 500 ${fontSize}px "Cormorant Garamond", serif`;
+    }
+
+    function syncMetrics() {
+      const width = Math.max(280, Math.floor(letterBody.clientWidth - 16));
+      const fontSize = width < 380 ? 21 : width < 520 ? 23 : 28;
+      const nextFont = getFontForLanguage(fontSize, state.language);
+      const fontChanged = metrics.font !== nextFont;
+
+      metrics.font = nextFont;
+      metrics.lineHeight = Math.round(fontSize * (state.language === 'zh' ? 1.7 : 1.45));
+      metrics.verticalPadding = width < 520 ? 20 : 26;
+      metrics.horizontalPadding = width < 520 ? 10 : 18;
+      metrics.obstaclePadding = width < 520 ? 10 : 18;
+      metrics.minWidth = width < 520 ? 110 : 160;
+
+      if (fontChanged && state.text) {
+        state.prepared = prepareWithSegments(state.text, metrics.font, { whiteSpace: 'pre-wrap' });
+      }
+    }
+
+    function updateLanguage(language) {
+      syncMetrics();
+      state.language = language;
+      state.text = getLetterText(language);
+      kicker.textContent = LETTERS[language].kicker;
+      title.textContent = LETTERS[language].title;
+      subtitle.textContent = LETTERS[language].subtitle;
+    //   statusNote.textContent = LETTERS[language].note;
+      document.documentElement.lang = language === 'zh' ? 'zh-CN' : 'en';
+
+      languageButtons.forEach(button => {
+        button.classList.toggle('active', button.dataset.language === language);
+      });
+
+      state.prepared = prepareWithSegments(state.text, metrics.font, { whiteSpace: 'pre-wrap' });
+      state.needsResize = true;
+    }
+
+    function resizeCanvas() {
+      syncMetrics();
+      const width = Math.max(280, Math.floor(letterBody.clientWidth - 16));
+      const isMobile = width < 520;
+      const obstacleWidths = getFlowerObstacles().map(obstacle => obstacle.width);
+      const widestObstacle = obstacleWidths.length ? Math.max(...obstacleWidths) : 0;
+      const blockedWidthEstimate = widestObstacle > 0
+        ? Math.min(width * 0.26, widestObstacle * 0.4 + metrics.obstaclePadding)
+        : 0;
+      const effectiveWidth = isMobile
+        ? Math.max(metrics.minWidth, width - metrics.horizontalPadding * 2)
+        : Math.max(metrics.minWidth, width - metrics.horizontalPadding * 2 - blockedWidthEstimate);
+      const lineStats = measureLineStats(state.prepared, effectiveWidth);
+      const reserveLineCount = isMobile ? 2 : 4;
+      const minCanvasHeight = isMobile ? 220 : 420;
+      const estimatedHeight = Math.max(
+        minCanvasHeight,
+        lineStats.lineCount * metrics.lineHeight
+          + metrics.verticalPadding * 2
+          + metrics.lineHeight * reserveLineCount
+      );
+      const dpr = window.devicePixelRatio || 1;
+
+      canvas.style.width = `${width}px`;
+      canvas.style.height = `${estimatedHeight}px`;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(estimatedHeight * dpr);
+      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+      ctx.clearRect(0, 0, width, estimatedHeight);
+      ctx.font = metrics.font;
+      ctx.fillStyle = '#5d332f';
+      ctx.textBaseline = 'alphabetic';
+
+      state.width = width;
+      state.height = estimatedHeight;
+      layoutFlowers();
+      state.needsResize = false;
+    }
+
+    function layoutFlowers(forceReset = false) {
+      const bodyWidth = Math.max(280, Math.floor(letterBody.clientWidth - 16));
+      const bodyHeight = Math.max(state.height, bodyWidth < 520 ? 280 : 420);
+      const activeLayouts = bodyWidth < 520 ? FLOWER_LAYOUTS_MOBILE : FLOWER_LAYOUTS_DESKTOP;
+      const previousWidth = state.bodyWidth || bodyWidth;
+      const previousHeight = state.bodyHeight || bodyHeight;
+
+      flowers.forEach((flower, index) => {
+        const config = activeLayouts[index];
+        const minSize = bodyWidth < 520 ? 152 : 192;
+        const maxSize = bodyWidth < 520 ? 204 : 264;
+        const size = Math.round(clamp(bodyWidth * config.size, minSize, maxSize));
+        let flowerState = state.flowerStates[index];
+
+        if (!flowerState || forceReset) {
+          flowerState = {
+            ...config,
+            x: Math.round((bodyWidth - size) * config.x),
+            y: Math.round((bodyHeight - size) * config.y),
+            size,
+            dragOffsetX: 0,
+            dragOffsetY: 0,
+            isDragging: false,
+            pointerId: null,
+          };
+        } else {
+          flowerState.x = clamp((flowerState.x / previousWidth) * bodyWidth, 0, bodyWidth - size);
+          flowerState.y = clamp((flowerState.y / previousHeight) * bodyHeight, 0, bodyHeight - size);
+          flowerState.size = size;
+        }
+
+        flower.style.width = `${size}px`;
+        flower.style.height = `${size}px`;
+        state.flowerStates[index] = flowerState;
+      });
+
+      state.bodyWidth = bodyWidth;
+      state.bodyHeight = bodyHeight;
+    }
+
+    function renderFlowers(now) {
+      state.flowerStates.forEach((flowerState, index) => {
+        const flower = flowers[index];
+        const motionX = flowerState.isDragging ? 0 : Math.sin(now * 0.00075 + flowerState.phase) * flowerState.driftX;
+        const motionY = flowerState.isDragging ? 0 : Math.cos(now * 0.00095 + flowerState.phase) * flowerState.driftY;
+        const scale = flowerState.isDragging ? 1.03 : 1 + Math.sin(now * 0.0012 + flowerState.phase) * 0.025;
+        const left = clamp(flowerState.x + motionX, 0, Math.max(0, state.bodyWidth - flowerState.size));
+        const top = clamp(flowerState.y + motionY, 0, Math.max(0, state.bodyHeight - flowerState.size));
+
+        flower.style.left = `${left}px`;
+        flower.style.top = `${top}px`;
+        flower.style.transform = `rotate(${flowerState.rotation}deg) scale(${scale})`;
+        flower.classList.toggle('is-dragging', flowerState.isDragging);
+      });
+    }
+
+    function getFlowerObstacles() {
+      const canvasBox = canvas.getBoundingClientRect();
+      return flowers.map(flower => {
+        const box = flower.getBoundingClientRect();
+        return {
+          left: box.left - canvasBox.left,
+          top: box.top - canvasBox.top,
+          right: box.right - canvasBox.left,
+          bottom: box.bottom - canvasBox.top,
+          width: box.width,
+        };
+      });
+    }
+
+    function subtractBlockedSegment(segments, blockStart, blockEnd) {
+      const next = [];
+      for (const segment of segments) {
+        if (blockEnd <= segment.start || blockStart >= segment.end) {
+          next.push(segment);
+          continue;
+        }
+
+        if (blockStart > segment.start) {
+          next.push({ start: segment.start, end: blockStart });
+        }
+
+        if (blockEnd < segment.end) {
+          next.push({ start: blockEnd, end: segment.end });
+        }
+      }
+      return next;
+    }
+
+    function getAvailableSegments(lineTop, lineBottom, obstacles) {
+      let segments = [{ start: metrics.horizontalPadding, end: state.width - metrics.horizontalPadding }];
+
+      for (const obstacle of obstacles) {
+        if (lineBottom <= obstacle.top || lineTop >= obstacle.bottom) {
+          continue;
+        }
+
+        const blockStart = Math.max(metrics.horizontalPadding, obstacle.left - metrics.obstaclePadding);
+        const blockEnd = Math.min(state.width - metrics.horizontalPadding, obstacle.right + metrics.obstaclePadding);
+        segments = subtractBlockedSegment(segments, blockStart, blockEnd);
+      }
+
+      const viableSegments = segments.filter(segment => segment.end - segment.start >= metrics.minWidth);
+      if (viableSegments.length > 0) {
+        return viableSegments.sort((a, b) => a.start - b.start);
+      }
+      return segments.sort((a, b) => (b.end - b.start) - (a.end - a.start));
+    }
+
+    function drawText() {
+      if (state.needsResize) {
+        resizeCanvas();
+      }
+
+      ctx.clearRect(0, 0, state.width, state.height);
+
+      const obstacles = getFlowerObstacles();
+      let cursor = { segmentIndex: 0, graphemeIndex: 0 };
+      let y = metrics.verticalPadding;
+      const baseline = metrics.lineHeight - 8;
+
+      while (true) {
+        const lineTop = y - metrics.lineHeight + 6;
+        const lineBottom = y + 8;
+        const segments = getAvailableSegments(lineTop, lineBottom, obstacles);
+
+        if (segments.length === 0) {
+          y += metrics.lineHeight;
+          if (y + metrics.lineHeight > state.height - metrics.verticalPadding) break;
+          continue;
+        }
+
+        let advancedOnThisLine = false;
+
+        for (const segment of segments) {
+          const segWidth = segment.end - segment.start;
+          if (segWidth < 40) continue;
+
+          const range = layoutNextLineRange(state.prepared, cursor, segWidth);
+          if (range === null) break;
+
+          const line = materializeLineRange(state.prepared, range);
+          ctx.fillText(line.text, segment.start, y + baseline);
+          cursor = range.end;
+          advancedOnThisLine = true;
+        }
+
+        if (!advancedOnThisLine) {
+          const fallback = { start: metrics.horizontalPadding, end: state.width - metrics.horizontalPadding };
+          const range = layoutNextLineRange(state.prepared, cursor, Math.max(40, fallback.end - fallback.start));
+          if (range === null) break;
+          const line = materializeLineRange(state.prepared, range);
+          ctx.fillText(line.text, fallback.start, y + baseline);
+          cursor = range.end;
+        }
+
+        // Check if all text has been laid out
+        const peekRange = layoutNextLineRange(state.prepared, cursor, 40);
+        if (peekRange === null) break;
+
+        y += metrics.lineHeight;
+
+        if (y + metrics.lineHeight > state.height - metrics.verticalPadding) {
+          break;
+        }
+      }
+    }
+
+    function handleFlowerPointerDown(event) {
+      const index = Number(event.currentTarget.dataset.flowerIndex);
+      const flowerState = state.flowerStates[index];
+      const bodyBox = letterBody.getBoundingClientRect();
+      const flowerBox = event.currentTarget.getBoundingClientRect();
+
+      state.draggingFlowerIndex = index;
+      flowerState.isDragging = true;
+      flowerState.pointerId = event.pointerId;
+      flowerState.x = clamp(flowerBox.left - bodyBox.left, 0, Math.max(0, state.bodyWidth - flowerState.size));
+      flowerState.y = clamp(flowerBox.top - bodyBox.top, 0, Math.max(0, state.bodyHeight - flowerState.size));
+      flowerState.dragOffsetX = event.clientX - flowerBox.left;
+      flowerState.dragOffsetY = event.clientY - flowerBox.top;
+
+      event.preventDefault();
+    }
+
+    function handleFlowerPointerMove(event) {
+      const index = state.draggingFlowerIndex;
+      if (index === null) {
+        return;
+      }
+
+      const flowerState = state.flowerStates[index];
+      if (!flowerState.isDragging || flowerState.pointerId !== event.pointerId) {
+        return;
+      }
+
+      const bodyBox = letterBody.getBoundingClientRect();
+      flowerState.x = clamp(
+        event.clientX - bodyBox.left - flowerState.dragOffsetX,
+        0,
+        Math.max(0, state.bodyWidth - flowerState.size)
+      );
+      flowerState.y = clamp(
+        event.clientY - bodyBox.top - flowerState.dragOffsetY,
+        0,
+        Math.max(0, state.bodyHeight - flowerState.size)
+      );
+
+      renderFlowers(performance.now());
+    }
+
+    function handleFlowerPointerEnd(event) {
+      const index = state.draggingFlowerIndex;
+      if (index === null) {
+        return;
+      }
+
+      const flowerState = state.flowerStates[index];
+      if (flowerState.pointerId !== event.pointerId) {
+        return;
+      }
+
+      flowerState.isDragging = false;
+      flowerState.pointerId = null;
+      state.draggingFlowerIndex = null;
+    }
+
+    function toLayoutConstant(flowerState) {
+      const xRange = Math.max(1, state.bodyWidth - flowerState.size);
+      const yRange = Math.max(1, state.bodyHeight - flowerState.size);
+      return {
+        x: Number((flowerState.x / xRange).toFixed(3)),
+        y: Number((flowerState.y / yRange).toFixed(3)),
+        size: Number((flowerState.size / Math.max(1, state.bodyWidth)).toFixed(3)),
+      };
+    }
+
+    function logFlowerPositions() {
+      if (state.flowerStates.length !== flowers.length || state.bodyWidth === 0 || state.bodyHeight === 0) {
+        return;
+      }
+
+      const snapshot = state.flowerStates.map((flowerState, index) => ({
+        index,
+        px: {
+          x: Math.round(flowerState.x),
+          y: Math.round(flowerState.y),
+          size: Math.round(flowerState.size),
+        },
+        constant: toLayoutConstant(flowerState),
+      }));
+
+      const payload = {
+        mode: state.bodyWidth < 520 ? 'mobile' : 'desktop',
+        body: {
+          width: Math.round(state.bodyWidth),
+          height: Math.round(state.bodyHeight),
+        },
+        flowers: snapshot,
+        layoutSuggestion: snapshot.map(item => item.constant),
+      };
+
+      console.log('[flower-debug]', payload);
+      console.log('[flower-debug-json]', JSON.stringify(payload));
+    }
+
+    function startFlowerDebugLogger() {
+      if (flowerDebugTimerId !== null) {
+        clearInterval(flowerDebugTimerId);
+      }
+      logFlowerPositions();
+      flowerDebugTimerId = window.setInterval(logFlowerPositions, FLOWER_DEBUG_INTERVAL_MS);
+    }
+
+    function frame(now) {
+      renderFlowers(now);
+      drawText();
+      state.rafId = requestAnimationFrame(frame);
+    }
+
+    function bindEvents() {
+      languageButtons.forEach(button => {
+        button.addEventListener('click', () => {
+          if (button.dataset.language !== state.language) {
+            updateLanguage(button.dataset.language);
+          }
+        });
+      });
+
+      window.addEventListener('resize', () => {
+        state.needsResize = true;
+      });
+
+      flowers.forEach(flower => {
+        flower.addEventListener('pointerdown', handleFlowerPointerDown);
+      });
+
+      window.addEventListener('pointermove', handleFlowerPointerMove);
+      window.addEventListener('pointerup', handleFlowerPointerEnd);
+      window.addEventListener('pointercancel', handleFlowerPointerEnd);
+    }
+
+    await document.fonts.ready;
+    updateLanguage('zh');
+    bindEvents();
+    cancelAnimationFrame(state.rafId);
+    layoutFlowers(true);
+    startFlowerDebugLogger();
+    frame(performance.now());
+  </script>
+</body>
+</html>
